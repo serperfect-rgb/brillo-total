@@ -8,7 +8,7 @@
    botones de WhatsApp mostrarán el resumen de la cotización
    en pantalla en lugar de abrir WhatsApp.
    ============================================================ */
-const BUSINESS_WHATSAPP = ""; // ← Número de WhatsApp del negocio (solo dígitos, con código de país)
+const BUSINESS_WHATSAPP = "50765456555"; // ← Número de WhatsApp del negocio (solo dígitos, con código de país)
 
 /* ---------- Modelo de precios (anclado a la tabla de tarifas) ----------
    Tarifas base por m² (USD) con un mínimo por tipo de propiedad:

@@ -62,11 +62,18 @@ function render() {
     monthly.textContent = "";
   }
 
+  const money2 = n => "$" + n.toFixed(2);
+  const feeLow = low * 0.05, feeHigh = high * 0.05;
+  const taxLow = (low + feeLow) * 0.07, taxHigh = (high + feeHigh) * 0.07;
+  const totLow = low + feeLow + taxLow, totHigh = high + feeHigh + taxHigh;
   const items = [
     ["Tipo de propiedad", RATES[state.tipo].label],
     ["Tamaño", state.m2 + " m²"],
     ["Tipo de servicio", SERVICES[state.servicio].label],
-    ["Frecuencia", FREQUENCIES[state.frecuencia].label]
+    ["Frecuencia", FREQUENCIES[state.frecuencia].label],
+    ["Servicio Brillo Total (5%)", money2(feeLow) + " – " + money2(feeHigh)],
+    ["ITBMS (7%)", money2(taxLow) + " – " + money2(taxHigh)],
+    ["Total a pagar", money2(totLow) + " – " + money2(totHigh)]
   ];
   $("#calcSummary").innerHTML = items
     .map(([k, v]) => `<li><span>${k}</span><strong>${v}</strong></li>`)
@@ -112,6 +119,7 @@ function quoteMessage() {
     `• Tipo de servicio: ${SERVICES[state.servicio].label}`,
     `• Frecuencia: ${FREQUENCIES[state.frecuencia].label}`,
     `• Estimado por visita: ${money(low)} – ${money(high)}`,
+    `• Total con servicio (5%) e ITBMS (7%): $${(low * 1.05 * 1.07).toFixed(2)} – $${(high * 1.05 * 1.07).toFixed(2)}`,
     "¿Me confirman disponibilidad? ¡Gracias!"
   ];
   return lines.join("\n");
@@ -161,6 +169,47 @@ document.querySelectorAll(".reveal").forEach(el => io.observe(el));
 
 /* ---------- Año del pie de página ---------- */
 $("#year").textContent = new Date().getFullYear();
+
+/* ---------- Catálogo: panel de pedido (bosquejo) ---------- */
+const orderPanel = $("#orderPanel");
+document.querySelectorAll(".order-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const price = parseFloat(btn.dataset.price);
+    const desde = btn.dataset.desde === "1";
+    const fee = price * 0.05;
+    const tax = (price + fee) * 0.07;
+    const total = price + fee + tax;
+    const m2 = n => "$" + n.toFixed(2);
+    const rows = [
+      ["Servicio", btn.dataset.name],
+      ["Precio", (desde ? "desde " : "") + m2(price)],
+      ["Servicio Brillo Total (5%)", m2(fee)],
+      ["ITBMS (7%)", m2(tax)],
+      ["Total a pagar", (desde ? "desde " : "") + m2(total)]
+    ];
+    $("#orderSummary").innerHTML = rows
+      .map(([k, v]) => `<li><span>${k}</span><strong>${v}</strong></li>`)
+      .join("");
+    $("#confirmOrderBtn").textContent = "Confirmar pedido";
+    $("#orderNote").textContent = "Bosquejo: al confirmar, tu pedido le aparece a los contratistas y uno lo toma.";
+    orderPanel.hidden = false;
+    orderPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+});
+$("#confirmOrderBtn").addEventListener("click", e => {
+  e.target.textContent = "¡Pedido publicado! (bosquejo)";
+  $("#orderNote").textContent = "Así quedaría: tu pedido ya es visible para los contratistas. En producción aquí seguiría el pago y la confirmación.";
+});
+
+/* ---------- Contratistas: tomar pedido (bosquejo) ---------- */
+document.querySelectorAll(".take-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const taken = btn.classList.toggle("taken");
+    btn.textContent = taken ? "Pedido tomado ✓" : "Tomar pedido";
+    const badge = btn.closest(".order-card").querySelector(".order-badge");
+    if (badge) badge.textContent = taken ? "Tomado por ti" : "Pedido disponible";
+  });
+});
 
 /* Pintado inicial de la calculadora */
 render();
